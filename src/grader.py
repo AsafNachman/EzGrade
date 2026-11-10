@@ -1,4 +1,7 @@
-"""Exam grading and weakness mapping."""
+"""Exam grading and weakness mapping.
+
+OWNER: Saleh Jaber
+"""
 
 from __future__ import annotations
 
