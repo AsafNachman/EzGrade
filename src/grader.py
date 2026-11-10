@@ -1,8 +1,4 @@
-"""Exam grading and weakness mapping.
-
-OWNER: <teammate name>
-STATUS: stub. ``grade_exam`` returns a structurally valid dummy result.
-"""
+"""Exam grading and weakness mapping."""
 
 from __future__ import annotations
 
@@ -20,31 +16,46 @@ def is_weakness(percentage: float, threshold: float = WEAKNESS_THRESHOLD) -> boo
 
 
 def grade_exam(exam: Exam, submission: ExamSubmission) -> ExamResult:
-    """Grade a submission and map per-topic weaknesses.
-
-    TODO(grader): replace the dummy result below with the real algorithm:
-      1. q_by_id = exam.questions_by_id()                                   # O(Q)
-      2. For each question: answer = submission.user_answers.get(q.id)
-         (missing answer == wrong). Count correct/total per q.topic_id.     # O(Q)
-      3. For each topic in exam.topics that has >= 1 question, build a
-         TopicScore with calculate_percentage() and is_weakness().
-      4. total_score = calculate_percentage(total_correct, len(exam.questions)).
-      5. feedback_per_question[q.id]: "Correct!" or
-         "Incorrect - correct answer: <option>. <explanation>".
-      6. Ignore answers for question ids that are not in the exam.
-    """
+    """Grade a submission and map per-topic weaknesses."""
     if submission.exam_id != exam.id:
         raise ValueError(f"Submission is for exam {submission.exam_id!r}, not {exam.id!r}.")
 
-    # ---- DUMMY RESULT (delete once implemented) ----
-    topic_breakdown = [
-        TopicScore(topic_title=topic.title, correct=0, total=0, percentage=0.0, is_weakness=is_weakness(0.0))
-        for topic in exam.topics
-    ]
-    feedback = {question.id: "TODO: grading not implemented yet." for question in exam.questions}
+    topic_totals: dict[str, int] = {}
+    topic_correct: dict[str, int] = {}
+    feedback: dict[str, str] = {}
+    total_correct = 0
+
+    for question in exam.questions:
+        topic_totals[question.topic_id] = topic_totals.get(question.topic_id, 0) + 1
+        answer = submission.user_answers.get(question.id)
+        if answer == question.correct_index:
+            total_correct += 1
+            topic_correct[question.topic_id] = topic_correct.get(question.topic_id, 0) + 1
+            feedback[question.id] = "Correct!"
+        else:
+            correct_option = question.options[question.correct_index]
+            feedback[question.id] = f"Incorrect - correct answer: {correct_option}. {question.explanation}"
+
+    topic_breakdown = []
+    for topic in exam.topics:
+        total = topic_totals.get(topic.id, 0)
+        if total == 0:
+            continue
+        correct = topic_correct.get(topic.id, 0)
+        percentage = calculate_percentage(correct, total)
+        topic_breakdown.append(
+            TopicScore(
+                topic_title=topic.title,
+                correct=correct,
+                total=total,
+                percentage=percentage,
+                is_weakness=is_weakness(percentage),
+            )
+        )
+
     return ExamResult(
         exam_id=exam.id,
-        total_score=0.0,
+        total_score=calculate_percentage(total_correct, len(exam.questions)),
         topic_breakdown=topic_breakdown,
         feedback_per_question=feedback,
     )
