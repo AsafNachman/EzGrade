@@ -1,6 +1,6 @@
 # Project Proposal: EzGrade – AI-Powered Syllabus-to-Exam Generator
 
-**Team Members:** Asaf, Roei, Ilai, Eliran, Yuval, Salah
+**Team Members:** Asaf Nachman, Roi Hatamov, Ilai Sformes, Eliran Keinan, Yuval Mitrani, Salah Jaber
 
 ## 1. The User and the Problem
 **Users:** University and college students.
